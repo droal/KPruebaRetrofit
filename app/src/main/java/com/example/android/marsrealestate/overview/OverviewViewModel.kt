@@ -47,6 +47,10 @@ class OverviewViewModel : ViewModel() {
     val properties: LiveData<List<MarsProperty>>
         get() = _properties
 
+    private val _navigateToSelectedProperty = MutableLiveData<MarsProperty>()
+    val navigateToSelectedProperty: LiveData<MarsProperty>
+        get() = _navigateToSelectedProperty
+
     //Implementar la corrutina
     private var job = Job()
     private val scope = CoroutineScope(job +Dispatchers.Main)
@@ -80,6 +84,23 @@ class OverviewViewModel : ViewModel() {
             }
         }
     }
+
+
+    /**
+     * When the property is clicked, set the [_navigateToSelectedProperty] [MutableLiveData]
+     * @param marsProperty The [MarsProperty] that was clicked on.
+     */
+    fun displayPropertyDetails(marsProperty: MarsProperty) {
+        _navigateToSelectedProperty.value = marsProperty
+    }
+
+    /**
+     * After the navigation has taken place, make sure navigateToSelectedProperty is set to null
+     */
+    fun displayPropertyDetailsComplete() {
+        _navigateToSelectedProperty.value = null
+    }
+
 
     override fun onCleared() {
         super.onCleared()
