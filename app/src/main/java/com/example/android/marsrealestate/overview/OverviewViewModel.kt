@@ -30,17 +30,22 @@ import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Callback
 
+enum class MarsApiStatus { LOADING, ERROR, DONE }
+
 /**
  * The [ViewModel] that is attached to the [OverviewFragment].
  */
 class OverviewViewModel : ViewModel() {
 
     // The internal MutableLiveData String that stores the status of the most recent request
-    private val _response = MutableLiveData<String>()
-
+    private val _status = MutableLiveData<MarsApiStatus>()
     // The external immutable LiveData for the request status String
-    val response: LiveData<String>
-        get() = _response
+    val status: LiveData<MarsApiStatus>
+        get() = _status
+
+    private val _properties = MutableLiveData<List<MarsProperty>>()
+    val properties: LiveData<List<MarsProperty>>
+        get() = _properties
 
     //Implementar la corrutina
     private var job = Job()
@@ -61,11 +66,17 @@ class OverviewViewModel : ViewModel() {
         scope.launch {
             var getPropertiesDeferred = MarsApi.retrofitService.getProperties()
             try {
+                _status.value = MarsApiStatus.LOADING
+                //This will run on a thread managed by Retrofit
                 var listResult = getPropertiesDeferred.await()
-                _response.value = "Cantidad de registros: "+ listResult.size
+                _status.value = MarsApiStatus.DONE
+                if(listResult.size > 0){
+                    _properties.value = listResult
+                }
             }
             catch (t:Throwable){
-                _response.value = "Failure: "+ t.message
+                _status.value = MarsApiStatus.ERROR
+                _properties.value = ArrayList()
             }
         }
     }
